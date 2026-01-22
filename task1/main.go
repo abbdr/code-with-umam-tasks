@@ -20,7 +20,7 @@ type Product struct {
 type Category struct {
 	ID    			int    `json:"id"`
 	Name  			string `json:"name"`
-	Description string `json:"description"`
+	Description 	string `json:"description"`
 }
 
 
@@ -41,6 +41,17 @@ var category = []Category{
 }
 
 func main() {
+	// /
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"author": "Mochamad Abdul Rozag",
+			"site": "https://rozag.my.id",
+			"email": "abdul@rozag.my.id",
+		})
+	})
+	
 	// /health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -63,10 +74,10 @@ func main() {
 		}
 	})
 
-	// GET /api/category/{id}
-	// PUT /api/category/{id}
-	// DELETE /api/category/{id}
-	http.HandleFunc("/api/category/", func(w http.ResponseWriter, r *http.Request) {
+	// GET /api/categories/{id}
+	// PUT /api/categories/{id}
+	// DELETE /api/categories/{id}
+	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			getCategoryByID(w, r)
 		} else if r.Method == "PUT" {
@@ -229,11 +240,11 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
 
 
 
-// GET category by id /api/category/{id}
+// GET category by id /api/categories/{id}
 func getCategoryByID(w http.ResponseWriter, r *http.Request) {
 	// Parse ID dari URL path
-	// URL: /api/category/123 -> ID = 123
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/category/")
+	// URL: /api/categories/123 -> ID = 123
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid Category ID", http.StatusBadRequest)
@@ -253,10 +264,10 @@ func getCategoryByID(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Category belum ada", http.StatusNotFound)
 }
 
-// PUT /api/category/{id}
+// PUT /api/categories/{id}
 func updateCategory(w http.ResponseWriter, r *http.Request) {
 	// get id dari request
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/category/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 
 	// ganti int
 	id, err := strconv.Atoi(idStr)
@@ -288,10 +299,10 @@ func updateCategory(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Category belum ada", http.StatusNotFound)
 }
 
-// DELETE /api/category/{id}
+// DELETE /api/categories/{id}
 func deleteCategory(w http.ResponseWriter, r *http.Request) {
 	// get id
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/category/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	
 	// ganti id int
 	id, err := strconv.Atoi(idStr)
