@@ -18,8 +18,8 @@ type Product struct {
 
 // Cetgory represents a category in the cashier system
 type Category struct {
-	ID    			int    `json:"id"`
-	Name  			string `json:"name"`
+	ID    				int    `json:"id"`
+	Name  				string `json:"name"`
 	Description 	string `json:"description"`
 }
 
@@ -27,17 +27,17 @@ type Category struct {
 
 
 // In-memory storage (sementara, nanti ganti database)
-var product = []Product{
-	{ID: 1, Nama: "Indomie Godog", Harga: 3500, Stok: 10},
-	{ID: 2, Nama: "Vit 1000ml", Harga: 3000, Stok: 40},
-	{ID: 3, Nama: "kecap", Harga: 12000, Stok: 20},
+var product = map[int]Product{
+	1: {ID: 1, Nama: "Indomie Godog", Harga: 3500, Stok: 10},
+	2: {ID: 2, Nama: "Vit 1000ml", Harga: 3000, Stok: 40},
+	3: {ID: 3, Nama: "kecap", Harga: 12000, Stok: 20},
 }
 
 // In-memory storage (sementara, nanti ganti database)
-var category = []Category{
-	{ID: 1, Name: "Fashion", Description: "Fashion Category",},
-	{ID: 2, Name: "Sport", Description: "Sport category",},
-	{ID: 3, Name: "Kitchen", Description: "Kitchen Category",},
+var category = map[int]Category{
+	1: {ID: 1, Name: "Fashion", Description: "Fashion Category",},
+	2: {ID: 2, Name: "Sport", Description: "Sport category",},
+	3: {ID: 3, Name: "Kitchen", Description: "Kitchen Category",},
 }
 
 
@@ -96,9 +96,19 @@ func main() {
 				return
 			}
 
-			// masukkin data ke dalam variable produk
-			newProduct.ID = len(product) + 1
-			product = append(product, newProduct)
+			// masukkin data ke dalam variable product
+			productLength := len(product)
+			for i := 1; ;i++ {
+				id := productLength+i
+				_, exist := product[id]
+				if exist {
+					continue
+				}else{
+					newProduct.ID = id
+					break
+				}
+			}
+			product[newProduct.ID] = newProduct
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated) // 201
@@ -123,8 +133,18 @@ func main() {
 			}
 
 			// masukkin data ke dalam variable produk
-			newCategory.ID = len(category) + 1
-			category = append(category, newCategory)
+			categoryLength := len(category)
+			for i := 1; ;i++ {
+				id := categoryLength+i
+				_, exist := category[id]
+				if exist {
+					continue
+				}else{
+					newCategory.ID = id
+					break
+				}
+			}
+			category[newCategory.ID] = newCategory
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated) // 201
@@ -146,7 +166,7 @@ func main() {
 // GET product by id /api/product/{id}
 func getProductByID(w http.ResponseWriter, r *http.Request) {
 	// Parse ID dari URL path
-	// URL: /api/produk/123 -> ID = 123
+	// URL: /api/product/123 -> ID = 123
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/product/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -155,16 +175,15 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cari produk dengan ID tersebut
-	for _, p := range product {
-		if p.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(p)
-			return
-		}
+	_, exist := product[id]
+	if !exist {
+		// Kalau not found
+		http.Error(w, "Produk belum ada", http.StatusNotFound)
+		return
 	}
-
-	// Kalau not found
-	http.Error(w, "Produk belum ada", http.StatusNotFound)
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product[id])
 }
 
 // PUT /api/product/{id}
@@ -187,19 +206,19 @@ func updateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// loop produk, cari id, ganti sesuai data dari request
-	for i := range product {
-		if product[i].ID == id {
-			updateProduct.ID = id
-			product[i] = updateProduct
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(updateProduct)
-			return
-		}
+	// cari id, ganti sesuai data dari request
+	_, exist := product[id]
+	if !exist {
+		http.Error(w, "Produk belum ada", http.StatusNotFound)
+		return
 	}
+
+	updateProduct.ID = id
+	product[id] = updateProduct
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updateProduct)
 	
-	http.Error(w, "Produk belum ada", http.StatusNotFound)
 }
 
 // DELETE /api/project/{id}
@@ -214,21 +233,18 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// loop produk cari ID, dapet index yang mau dihapus
-	for i, p := range product {
-		if p.ID == id {
-			// bikin slice baru dengan data sebelum dan sesudah index
-			product = append(product[:i], product[i+1:]...)
-			
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "sukses delete",
-			})
-			return
-		}
+	// cari id yang mau dihapus
+	_, exist := product[id]
+	if !exist {	
+		http.Error(w, "Produk belum ada", http.StatusNotFound)
+		return
 	}
 
-	http.Error(w, "Produk belum ada", http.StatusNotFound)
+	delete(product, id)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "sukses delete",
+	})
 }
 
 
@@ -245,16 +261,15 @@ func getCategoryByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cari category dengan ID tersebut
-	for _, p := range category {
-		if p.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(p)
-			return
-		}
+	_, exist := product[id]
+	if !exist {
+		// Kalau not found
+		http.Error(w, "Category belum ada", http.StatusNotFound)
+		return
 	}
-
-	// Kalau not found
-	http.Error(w, "Category belum ada", http.StatusNotFound)
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product[id])
 }
 
 // PUT /api/categories/{id}
@@ -277,19 +292,18 @@ func updateCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// loop category, cari id, ganti sesuai data dari request
-	for i := range category {
-		if category[i].ID == id {
-			updateCategory.ID = id
-			category[i] = updateCategory
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(updateCategory)
-			return
-		}
+	// cari id, ganti sesuai data dari request
+	_, exist := product[id]
+	if !exist {
+		http.Error(w, "Category belum ada", http.StatusNotFound)
+		return
 	}
 	
-	http.Error(w, "Category belum ada", http.StatusNotFound)
+	updateCategory.ID = id
+	category[id] = updateCategory
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updateCategory)
 }
 
 // DELETE /api/categories/{id}
@@ -304,19 +318,17 @@ func deleteCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// loop category cari ID, dapet index yang mau dihapus
-	for i, p := range category {
-		if p.ID == id {
-			// bikin slice baru dengan data sebelum dan sesudah index
-			category = append(category[:i], category[i+1:]...)
-			
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "sukses delete",
-			})
-			return
-		}
+	// cari id yang mau dihapus
+	_, exist := product[id]
+	if !exist {
+		http.Error(w, "Category belum ada", http.StatusNotFound)
+		return
 	}
-
-	http.Error(w, "Category belum ada", http.StatusNotFound)
+	
+	// hapus data dg key id
+	delete(category, id)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "sukses delete",
+	})
 }
