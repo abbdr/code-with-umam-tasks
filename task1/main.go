@@ -57,7 +57,7 @@ func main() {
 	// GET /api/product/{id}
 	// PUT /api/product/{id}
 	// DELETE /api/product/{id}
-	http.HandleFunc("/api/product/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/products/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			getProductByID(w, r)
 		} else if r.Method == "PUT" {
@@ -93,6 +93,10 @@ func main() {
 			err := json.NewDecoder(r.Body).Decode(&newProduct)
 			if err != nil {
 				http.Error(w, "Invalid request", http.StatusBadRequest)
+				return
+			}
+			if newProduct.Harga == 0 || newProduct.Nama == "" || newProduct.Stok == 0 {
+				http.Error(w, "Value of Harga, Nama, or Stok can't be 0 or empty string", http.StatusBadRequest)
 				return
 			}
 
@@ -131,6 +135,10 @@ func main() {
 				http.Error(w, "Invalid request", http.StatusBadRequest)
 				return
 			}
+			if newCategory.Description == "" || newCategory.Name == "" {
+				http.Error(w, "Value of Name or Description can't be empty string", http.StatusBadRequest)
+				return
+			}
 
 			// masukkin data ke dalam variable produk
 			categoryLength := len(category)
@@ -167,7 +175,7 @@ func main() {
 func getProductByID(w http.ResponseWriter, r *http.Request) {
 	// Parse ID dari URL path
 	// URL: /api/product/123 -> ID = 123
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/product/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid Produk ID", http.StatusBadRequest)
@@ -176,6 +184,7 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 
 	// Cari produk dengan ID tersebut
 	_, exist := product[id]
+	fmt.Println(exist)
 	if !exist {
 		// Kalau not found
 		http.Error(w, "Produk belum ada", http.StatusNotFound)
@@ -189,7 +198,7 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 // PUT /api/product/{id}
 func updateProduct(w http.ResponseWriter, r *http.Request) {
 	// get id dari request
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/product/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 
 	// ganti int
 	id, err := strconv.Atoi(idStr)
@@ -203,6 +212,10 @@ func updateProduct(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&updateProduct)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if updateProduct.Harga == 0 || updateProduct.Nama == "" || updateProduct.Stok == 0 {
+		http.Error(w, "Value of Harga, Nama, or Stok can't be 0 or empty string", http.StatusBadRequest)
 		return
 	}
 
@@ -224,7 +237,7 @@ func updateProduct(w http.ResponseWriter, r *http.Request) {
 // DELETE /api/project/{id}
 func deleteProduct(w http.ResponseWriter, r *http.Request) {
 	// get id
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/product/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	
 	// ganti id int
 	id, err := strconv.Atoi(idStr)
@@ -261,7 +274,7 @@ func getCategoryByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cari category dengan ID tersebut
-	_, exist := product[id]
+	_, exist := category[id]
 	if !exist {
 		// Kalau not found
 		http.Error(w, "Category belum ada", http.StatusNotFound)
@@ -291,9 +304,13 @@ func updateCategory(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
+	if updateCategory.Description == "" || updateCategory.Name == "" {
+		http.Error(w, "Value of Name or Description can't be empty string", http.StatusBadRequest)
+		return
+	}
 
 	// cari id, ganti sesuai data dari request
-	_, exist := product[id]
+	_, exist := category[id]
 	if !exist {
 		http.Error(w, "Category belum ada", http.StatusNotFound)
 		return
@@ -319,7 +336,7 @@ func deleteCategory(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// cari id yang mau dihapus
-	_, exist := product[id]
+	_, exist := category[id]
 	if !exist {
 		http.Error(w, "Category belum ada", http.StatusNotFound)
 		return
