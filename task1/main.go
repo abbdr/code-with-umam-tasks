@@ -44,17 +44,7 @@ var category = []Category{
 
 
 func main() {
-	// /
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"author": "Mochamad Abdul Rozag",
-			"site": "https://rozag.my.id",
-			"email": "abdul@rozag.my.id",
-		})
-	})
-	
+
 	// /health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
