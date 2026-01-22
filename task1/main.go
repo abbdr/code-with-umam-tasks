@@ -40,6 +40,9 @@ var category = []Category{
 	{ID: 3, Name: "Kitchen", Description: "Kitchen Category",},
 }
 
+
+
+
 func main() {
 	// /
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
