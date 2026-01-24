@@ -1,8 +1,12 @@
 package main
 
+// go get -tool github.com/air-verse/air@latest
+
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
@@ -47,6 +51,7 @@ func main() {
 
 	// /health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, " ", r.URL.Path, " from ", r.RemoteAddr)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "OK",
@@ -58,6 +63,7 @@ func main() {
 	// PUT /api/product/{id}
 	// DELETE /api/product/{id}
 	http.HandleFunc("/api/products/", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, " ", r.URL.Path, " from ", r.RemoteAddr)
 		if r.Method == "GET" {
 			getProductByID(w, r)
 		} else if r.Method == "PUT" {
@@ -71,6 +77,7 @@ func main() {
 	// PUT /api/categories/{id}
 	// DELETE /api/categories/{id}
 	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, " ", r.URL.Path, " from ", r.RemoteAddr)
 		if r.Method == "GET" {
 			getCategoryByID(w, r)
 		} else if r.Method == "PUT" {
@@ -83,9 +90,11 @@ func main() {
 	// GET /api/products
 	// POST /api/products
 	http.HandleFunc("/api/products", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, " ", r.URL.Path, " from ", r.RemoteAddr)
 		if r.Method == "GET" {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(product)
+			fmt.Println(maps.Values(product))
+			json.NewEncoder(w).Encode(maps.Values(product))
 			
 		} else if r.Method == "POST" {
 			// baca data dari request
@@ -99,6 +108,7 @@ func main() {
 				http.Error(w, "Value of Harga, Nama, or Stok can't be 0 or empty string", http.StatusBadRequest)
 				return
 			}
+			log.Println(newProduct)
 
 			// masukkin data ke dalam variable product
 			productLength := len(product)
@@ -123,9 +133,15 @@ func main() {
 	// GET /api/categories
 	// POST /api/categories
 	http.HandleFunc("/api/categories", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, " ", r.URL.Path, " from ", r.RemoteAddr)
 		if r.Method == "GET" {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(category)
+			categorySlice := []Category{}
+			for v := range maps.Values(category){
+				categorySlice = append(categorySlice, v)
+			}
+
+			json.NewEncoder(w).Encode(categorySlice)
 			
 		} else if r.Method == "POST" {
 			// baca data dari request
@@ -139,6 +155,7 @@ func main() {
 				http.Error(w, "Value of Name or Description can't be empty string", http.StatusBadRequest)
 				return
 			}
+			log.Println(newCategory)
 
 			// masukkin data ke dalam variable produk
 			categoryLength := len(category)
@@ -228,6 +245,7 @@ func updateProduct(w http.ResponseWriter, r *http.Request) {
 
 	updateProduct.ID = id
 	product[id] = updateProduct
+	log.Println(updateProduct)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updateProduct)
@@ -318,6 +336,7 @@ func updateCategory(w http.ResponseWriter, r *http.Request) {
 	
 	updateCategory.ID = id
 	category[id] = updateCategory
+	log.Println(updateCategory)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updateCategory)
