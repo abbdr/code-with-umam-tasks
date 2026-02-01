@@ -9,16 +9,16 @@ import (
 	"strings"
 )
 
-type ProductHandler struct {
-	service *services.ProductService
+type CategoryHandler struct {
+	service *services.CategoryService
 }
 
-func NewProductHandler(service *services.ProductService) *ProductHandler {
-	return &ProductHandler{service: service}
+func NewCategoryHandler(service *services.CategoryService) *CategoryHandler {
+	return &CategoryHandler{service: service}
 }
 
-// HandleProducts - GET /api/products
-func (h *ProductHandler) HandleProducts(w http.ResponseWriter, r *http.Request) {
+// HandleProducts - GET /api/produk
+func (h *CategoryHandler) HandleProducts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.GetAll(w, r)
@@ -29,7 +29,7 @@ func (h *ProductHandler) HandleProducts(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.service.GetAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -40,8 +40,8 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(products)
 }
 
-func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var product models.Product
+func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var product models.Category
 	err := json.NewDecoder(r.Body).Decode(&product)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -59,8 +59,8 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(product)
 }
 
-// HandleProductByID - GET/PUT/DELETE /api/products/{id}
-func (h *ProductHandler) HandleProductByID(w http.ResponseWriter, r *http.Request) {
+// HandleProductByID - GET/PUT/DELETE /api/categories/{id}
+func (h *CategoryHandler) HandleProductByID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.GetByID(w, r)
@@ -73,9 +73,9 @@ func (h *ProductHandler) HandleProductByID(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// GetByID - GET /api/products/{id}
-func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
+// GetByID - GET /api/categories/{id}
+func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid product ID", http.StatusBadRequest)
@@ -92,15 +92,15 @@ func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(product)
 }
 
-func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
+func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid product ID", http.StatusBadRequest)
 		return
 	}
 
-	var product models.Product
+	var product models.Category
 	err = json.NewDecoder(r.Body).Decode(&product)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -118,9 +118,9 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(product)
 }
 
-// Delete - DELETE /api/products/{id}
-func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
+// Delete - DELETE /api/categories/{id}
+func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid product ID", http.StatusBadRequest)
