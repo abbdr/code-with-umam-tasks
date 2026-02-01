@@ -15,7 +15,7 @@ func NewcategoryRepository(db *sql.DB) *CategoryRepository {
 }
 
 func (repo *CategoryRepository) GetAll() ([]models.Category, error) {
-	query := "SELECT category_id, name, description FROM categories"
+	query := "SELECT category_id, category_name, description FROM categories"
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -36,14 +36,14 @@ func (repo *CategoryRepository) GetAll() ([]models.Category, error) {
 }
 
 func (repo *CategoryRepository) Create(category *models.Category) error {
-	query := "INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING category_id"
+	query := "INSERT INTO categories (category_name, description) VALUES ($1, $2) RETURNING category_id"
 	err := repo.db.QueryRow(query, category.Name, category.Description).Scan(&category.ID)
 	return err
 }
 
 // GetByID - ambil produk by ID
 func (repo *CategoryRepository) GetByID(id int) (*models.Category, error) {
-	query := "SELECT category_id, name, decription FROM categories WHERE category_id = $1"
+	query := "SELECT category_id, category_name, decription FROM categories WHERE category_id = $1"
 
 	var p models.Category
 	err := repo.db.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.Description)
@@ -58,7 +58,7 @@ func (repo *CategoryRepository) GetByID(id int) (*models.Category, error) {
 }
 
 func (repo *CategoryRepository) Update(category *models.Category) error {
-	query := "UPDATE categories SET name = $1, description = $2 WHERE category_id = $3"
+	query := "UPDATE categories SET category_name = $1, description = $2 WHERE category_id = $3"
 	result, err := repo.db.Exec(query, category.Name, category.Description, category.ID)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (repo *CategoryRepository) Update(category *models.Category) error {
 }
 
 func (repo *CategoryRepository) Delete(id int) error {
-	query := "DELETE FROM categories WHERE category_id = $1"
+	query := "DELETE FROM products WHERE category_id = $1"
 	result, err := repo.db.Exec(query, id)
 	if err != nil {
 		return err
@@ -87,8 +87,18 @@ func (repo *CategoryRepository) Delete(id int) error {
 		return err
 	}
 
+	query = "DELETE FROM categories WHERE category_id = $1"
+	result, err = repo.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	rows, err = result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	
 	if rows == 0 {
-		return errors.New("categories tidak ditemukan")
+		return errors.New("category tidak ditemukan")
 	}
 
 	return err

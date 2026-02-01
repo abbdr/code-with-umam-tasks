@@ -135,6 +135,6 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Product deleted successfully",
+		"message": "Category deleted successfully",
 	})
 }
