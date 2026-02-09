@@ -16,3 +16,7 @@ func NewReportService(repo *repositories.ReportRepository) *ReportService {
 func (s *ReportService) TodayReport() (*models.Report, error) {
 	return s.repo.TodayReport()
 }
+
+func (s *ReportService) RangeReport(start, end string) (*models.Report, error) {
+	return s.repo.RangeReport(start, end)
+}
